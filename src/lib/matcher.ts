@@ -67,4 +67,69 @@ export function normalizeText(text: string): string {
   return tokens.join(' ');
 }
 
+export type MatchType = "exact" | "close" | "none";
 
+export function resolveAutocompleteKey(raw: string | null): string | null {
+  if (!raw) return null;
+  return AUTOCOMPLETE_MAP[raw] ?? null;
+}
+
+export function matchProfileField(
+  candidateText: string,
+  field: ProfileField
+): MatchType {
+  const normalizedCandidate = normalizeText(candidateText);
+  const normalizedLabel = normalizeText(field.label);
+  const normalizedSynonyms = field.synonyms.map(normalizeText);
+
+  if (normalizedCandidate === normalizedLabel) return "exact";
+  if (normalizedSynonyms.includes(normalizedCandidate)) return "exact";
+
+  if (
+    normalizedLabel.includes(normalizedCandidate) || normalizedCandidate.includes(normalizedLabel)
+  ) {
+    return "close";
+  }
+  if (
+    normalizedSynonyms.some(
+      (s) => s.includes(normalizedCandidate) || normalizedCandidate.includes(s)
+    )
+  ) {
+    return "close";
+  }
+  return "none";
+}
+
+export function findBestMatch(
+  candidateText: string,
+  rawAutocomplete: string | null,
+  profile: Profile
+): { field: ProfileField; matchType: MatchType } | null {
+  const autoKey = resolveAutocompleteKey(rawAutocomplete);
+
+  if (autoKey) {
+    const mapped = profile.fields.find((f) => f.field === autoKey);
+
+    if (mapped) {
+      return { field: mapped, matchType: "exact" };
+    }
+  }
+  let best: {
+    field: ProfileField;
+    matchType: MatchType;
+  } | null = null;
+
+  for (const field of profile.fields) {
+    const matchType = matchProfileField(candidateText, field);
+
+    if (matchType === "exact") {
+      return { field, matchType };
+    }
+
+    if (matchType === "close" && !best) {
+      best = { field, matchType };
+    }
+  }
+
+  return best;
+}
