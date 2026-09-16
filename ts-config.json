@@ -1,0 +1,19 @@
+{
+  "compiilerOptions": {
+    "target": "ES2020",
+    "userDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "noEmit": true,
+    "types": ["vite/client", "chrome"]
+  },
+  "include": ["src", "vite.config.ts"]
+}

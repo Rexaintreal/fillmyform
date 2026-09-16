@@ -1,0 +1,33 @@
+{
+  "name": "fillmyform",
+  "version": "1.0.0",
+  "description": "Browser extension for one click autofill forms",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raze-me/fillmyform.git"
+  },
+  "keywords": [
+    "browser-extension",
+    "chrome-extension",
+    "autofill"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/raze-me/fillmyform/issues"
+  },
+  "homepage": "https://github.com/raze-me/fillmyform#readme",
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.7.1",
+    "@types/chrome": "^0.3.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1"
+  }
+}
