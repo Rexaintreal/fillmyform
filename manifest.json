@@ -1,20 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "Form Autofill",
+  "name": "Fill My Form",
   "version": "1.0.0",
   "description": "Automatically fill repetitive forms using saved user information.",
-  "permission": ["activeTab", "storage", "scripting"],
+  "permissions": ["activeTab", "storage", "scripting"],
   "action": {
     "default_popup": "src/popup/popup.html"
   },
   "options_page": "src/options/options.html",
   "background": {
-    "service_worker": "src/background/background.ts"
-  },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["src/content/content.ts"]
-    }
-  ]
+    "service_worker": "src/background/background.ts",
+    "type": "module"
+  }
 }

@@ -37,6 +37,7 @@ export function normalizeText(text: string): string {
     .replace(/^your\s+/i, "");
 
   normalized = normalized.replace(/[^\w\s]/gi, " ");
+  normalized = normalized.replace(/\s+/g, " ").trim();
 
   const abbreviations: Record<string, string> = {
     addr: "address",
@@ -64,7 +65,71 @@ export function normalizeText(text: string): string {
     .split(" ")
     .filter(Boolean)
     .map((token) => abbreviations[token] || token);
-  return tokens.join(' ');
+  return tokens.join(" ");
+}
+
+export function tokenOverlapScore(a: string, b: string): number {
+  const tokensA = new Set(a.split(" ").filter((t) => t.length > 1));
+  const tokensB = new Set(b.split(" ").filter((t) => t.length > 1));
+  if (tokensA.size === 0 || tokensB.size === 0) return 0;
+
+  let intersection = 0;
+  for (const t of tokensA) {
+    if (tokensB.has(t)) intersection++;
+  }
+  const union = new Set([...tokensA, ...tokensB]).size;
+  return union === 0 ? 0 : intersection / union;
+}
+
+export function levenshtein(a: string, b: string): number {
+  const matrix: number[][] = [];
+  
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+  
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) == a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1, 
+          Math.min(
+            matrix[i][j - 1] + 1, 
+            matrix[i - 1][j] + 1  
+          )
+        );
+      }
+    }
+  }
+  
+  return matrix[b.length][a.length];
+}
+
+export function calculateSimilarity(a: string, b: string): number{
+  if(a===b) return 1.0;
+  const distance = levenshtein(a, b);
+  const maxLength = Math.max(a.length, b.length);
+  if(maxLength ===0) return 1.0;
+  return 1 - (distance/maxLength);
+}
+
+export interface MatchResult{
+  fieldId: string;
+  confidence: 'high' | 'medium';
+  score: number;
+}
+
+const FUZZY_THRESHOLD = 0.80;
+const TIE_EPSILON = 0.05;
+
+function isMeaningfulTypeHint(typeHint: string):boolean{
+  const t = typeHint.trim().toLowerCase();
+  return t !== '' && t !== 'text';
 }
 
 export type MatchType = "exact" | "close" | "none";
