@@ -59,20 +59,7 @@ function fillForm(profile: Profile): FillSummary {
       const primaryValue = values[0];
 
       matchedCount++;
-      let filled: boolean;
-      switch (field.adapter) {
-        case "google_forms":
-          //next version
-          break;
-        case "tally":
-          //next version
-          break;
-        case "fillout":
-          //next version
-          break;
-        default:
-          filled = fillField(field.element, primaryValue);
-      }
+      const filled = fillField(field.element, primaryValue);
 
       if (filled) {
         const confidence = values.length > 1 ? "medium" : match.confidence;

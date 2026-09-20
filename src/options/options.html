@@ -3,73 +3,58 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fill My Form - Options</title>
+    <title>FillMyForm | Profiles</title>
   </head>
   <body>
-    <div class="header">
-      <h2>Fill My Form - Options</h2>
-      <div style="display: flex; gap: 8px;">
-        <a href="/test-from.html" target="_blank" style="text-decoration: none;">
-          <button type="button" style="background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe;"> Test Form</button>
-        </a>
-        <button id="exportBtn">Export Profile</button>
-        <button id="importBtn">Import Profile</button>
-        <input type="file" id="importFile" style="display: none;" accept=".json">
-      </div>
-    </div>
-
-    <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;">
-    <div class="profiles-sidebar">
-      <h3>Profiles</h3>
-      <ul id="profileList" style="list-style: none; padding-left: 0;"></ul>
-    <button id="newProfileButton">+ New Profile</button>
-    </div>
-    <div class="profile-editor" id="profileEditor" style="display: none;">
-      <h3 id="currentProfileName">Select a Profile</h3>
-      <div class="fieldsContainer">
-      </div>
-      <div class="actions">
-        <button id="addFieldBtn">Add Field</button>
-        <button id="saveProfileBtn" class="primary-btn">Save Profile</button>
-        <button id="deleteProfileBtn" style="color: #ef4444; border-color: #fca5a5;">Delete Profile</button>
-      </div>
-    </div>
-
-    <div class="sync-card">
-      <h3>
-        <span>Multi-Device Encrypted Sync</span>
-        <span id="syncStatusBadge" class="sync-badge badge-disabled">Disabled</span>
-      </h3>
-      <p style="font-size: 0.9em; color: #64748b; margin-top: 4px;">
-        Zero-knowledge AES-GCM 256-bit encryption. Your data is encrypted locally with your passphrase before exporting or syncing.
-      </p>
-      <div class="sync-raw">
-        <label style="display: flex; align-items: center; gap: 6px; font-weight: 500; cursor: pointer;">
-          <input type="checkbox" id="syncEnabledToggle"> Enable Sync
-        </label>
-      </div>
-
-      <div id="syncSettingsPanel" style="display: none; margin-top: 15px;">
-        <div class="sync-row">
-          <label style="width: 140px; font-size: 0.9em;">Encryption Key:</label>
-          <input type="password" id="syncPassphrase" placeholder="Min 6 characters" style="width: 220px;"> <button id="saveSyncBtn">Save Key</button>
+    <main class="page">
+      <header class="topbar">
+        <div>
+          <h1>FillMyForm</h1>
+          <p>Manage the information used to fill your forms</p>
         </div>
 
-        <div class="sync-row">
-          <label style="width: 140px; font-size: 0.9em;">Encrypted Backup</label>
-          <button id="exportEncryptedBtn">Export Encrypted Backup</button>
-          <button id="importEncryptedBtn">Import Encrypted Backup</button>
-          <input type="file" id="importEncryptedBtn" style="display: none;" accept=".json">
+        <div class="top-actions">
+          <button>Open Test Form</button>
+          <button>+ New Profile</button>
         </div>
-        <div class="sync-row" style="margin-top: 15px;">
-          <span style="font-size: 0.85em; color: #64748b;">Last Synced: <strong id="lastSyncedText">Never</strong></span>
-        </div>
+      </header>
+
+      <section class="layout">
+        <aside class="card sidebar">
+          <div>
+            <h2>Profiles</h2>
+          </div>
+          <ul></ul>
+        </aside>
+
+        <section class="card editor">
+          <div>
+            <h2>No profile selected</h2>
+            <p>Create a profile to start saving your form information.</p>
+          </div>
+
+          <div>
+            <h2>Profile</h2>
+            <p>Add the information you commonly enter in to forms.</p>
+          </div>
+
+          <button class="add-field">+ Add Field</button>
+
+          <button class="delete-btn">Delete Profile</button>
+
+          <button class="save-btn">Save Profile</button>
+        </section>
+      </section>
+
+      <div class="info">
+        FillMyForm stores your profiles locally in the browser. Select a profile
+        from the extension popup and the <strong>FillMyForm</strong> to fill
+        supported HTML form fields. The extension does not submit forms
+        automatically.
       </div>
-    </div>
-    <div style="clear: both; margin-top: 40px; padding-top: 15px; border-top: 1px solid #eee; text-align: center; font-size: 0.85em; color: #666;">
-      <span>Fill My Form v1.0.0</span> &bull;
-      <a href="/privacy.html" target="_blank" style="color: #4f46e5; text-decoration: none;">Privacy Policy</a>
-    </div>
+
+      <footer class="footer">FillMyForm V1</footer>
+    </main>
     <script type="module" src="./options.ts"></script>
   </body>
 </html>
