@@ -1,5 +1,5 @@
 export interface ProfileField {
-  field: string;
+  fieldId: string;
   label: string;
   synonyms: string[];
   value: string;
