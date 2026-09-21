@@ -9,10 +9,11 @@ let SyncSettings: SyncSettings;
 const profileListEl = document.getElementById('profileList') as HTMLUListElement;
 const profileEditorEl = document.getElementById('profileEditor') as HTMLDivElement;
 const currentProfileNameEl = document.getElementById('currentProfileName') as HTMLHeadingElement;
-const fieldsContainerEl = document.getElementById('fields Container') as HTMLDivElement;
-
+const fieldsContainerEl = document.getElementById('fieldsContainer') as HTMLDivElement;
+const emptyEditorEl = document.getElementById('emptyEditor') as HTMLDivElement;
 
 async function init() {
+  setupEventListeners();
   await loadProfiles();
 }
 
@@ -31,7 +32,7 @@ function renderSidebar() {
         li.style.marginBottom = '2px';
         if (currentProfile?.profileId === p.profileId) {
             li.style.fontWeight = 'bold';
-            li.style.backgroundClip = '#e0e7ff';
+            li.style.backgroundColor = '#e0e7ff';
             li.style.color = '#3730a3';
         }
         li.addEventListener('click', () => selectProfile(p));
@@ -41,8 +42,9 @@ function renderSidebar() {
 
 function selectProfile(profile: Profile) {
     currentProfile = JSON.parse(JSON.stringify(profile));
+    emptyEditorEl.style.display = 'none';
     profileEditorEl.style.display = 'block';
-    currentProfileNameEl.textContent = currentProfile!.profileName;
+    currentProfileNameEl.textContent = currentProfile.profileName;
     renderFields();
     renderSidebar();
 }
@@ -95,7 +97,7 @@ function renderFields() {
 
             const delBtn = document.createElement('button');
             delBtn.textContent = 'x';
-            delBtn.style.color = '#ef444';
+            delBtn.style.color = '#ef4444';
             delBtn.title = 'Delete custom field';
             delBtn.addEventListener('click', () => {
                 currentProfile!.fields.splice(index, 1);
@@ -109,14 +111,13 @@ function renderFields() {
 }
 
 function setupEventListeners() {
-    document.getElementById('newProfileBtn')?.addEventListener('click', async () => {
+    document.getElementById('newProfileButton')?.addEventListener('click', async () => {
         const name = prompt("Enter profile name:");
-        if (name) {
-            const newProfile = createNewProfile(name);
-            await saveProfile(newProfile);
-            await loadProfiles();
-            selectProfile(newProfile);
-        }
+        if (!name) return;
+
+        const newProfile = await createNewProfile(name);
+        await loadProfiles();
+        selectProfile(newProfile);
     });
     document.getElementById('saveProfileBtn')?.addEventListener('click', async () => {
         if (currentProfile) {
@@ -126,16 +127,17 @@ function setupEventListeners() {
             alert('Profile saved!');
         }
     });
+    
 
     document.getElementById('deleteProfileBtn')?.addEventListener('click', async () => {
         if (currentProfile && confirm('Delete this profile?')) {
             await deleteProfile(currentProfile.profileId);
             currentProfile = null;
             profileEditorEl.style.display = 'none';
+            emptyEditorEl.style.display = 'block';
             await loadProfiles();
         }
     });
-
 
   document.getElementById('addFieldBtn')?.addEventListener('click', () => {
     if (currentProfile) {
@@ -150,6 +152,10 @@ function setupEventListeners() {
       renderFields();
     }
   });
+
+    document.getElementById('testFormBtn')?.addEventListener('click', () => {
+        chrome.tabs.create({ url: chrome.runtime.getURL('test-form.html') });
+    });
 
   //json export
   document.getElementById('exportBtn')?.addEventListener('click', () => {

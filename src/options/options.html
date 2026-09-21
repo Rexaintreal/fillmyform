@@ -3,58 +3,375 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FillMyForm | Profiles</title>
+
+    <title>Fill My Form — Profiles</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+
+      .page {
+        max-width: 1050px;
+        margin: 0 auto;
+        padding: 36px 24px 60px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 28px;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+      }
+
+      .brand p {
+        margin: 7px 0 0;
+        color: #64748b;
+        font-size: 14px;
+      }
+
+      .top-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      button {
+        border: 1px solid #cbd5e1;
+        background: white;
+        color: #334155;
+        border-radius: 6px;
+        padding: 8px 13px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #f8fafc;
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .primary-btn {
+        background: #4f46e5;
+        border-color: #4f46e5;
+        color: white;
+      }
+
+      .primary-btn:hover {
+        background: #4338ca;
+      }
+
+      .danger-btn {
+        color: #b91c1c;
+        border-color: #fecaca;
+      }
+
+      .danger-btn:hover {
+        background: #fef2f2;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: 18px;
+      }
+
+      .card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+      }
+
+      .sidebar {
+        padding: 16px;
+      }
+
+      .sidebar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .sidebar-header h2 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 650;
+      }
+
+      #profileList {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .profile-item {
+        padding: 9px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        color: #475569;
+        margin-bottom: 2px;
+      }
+
+      .profile-item:hover {
+        background: #f1f5f9;
+      }
+
+      .profile-item.active {
+        background: #eef2ff;
+        color: #3730a3;
+        font-weight: 600;
+      }
+
+      .empty-profiles {
+        color: #94a3b8;
+        font-size: 12px;
+        line-height: 1.5;
+        padding: 8px 4px;
+      }
+
+      .editor {
+        padding: 22px;
+      }
+
+      .editor-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .editor-header h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 650;
+      }
+
+      .editor-header p {
+        margin: 5px 0 0;
+        color: #64748b;
+        font-size: 12px;
+      }
+
+      .fields {
+        padding-top: 18px;
+      }
+
+      .field-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 110px 36px;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 9px;
+      }
+
+      .field-row input,
+      .field-row select {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 5px;
+        padding: 8px 9px;
+        font-size: 13px;
+        color: #0f172a;
+        background: white;
+        outline: none;
+      }
+
+      .field-row input:focus,
+      .field-row select:focus {
+        border-color: #818cf8;
+        box-shadow: 0 0 0 2px #eef2ff;
+      }
+
+      .remove-field {
+        width: 36px;
+        height: 34px;
+        padding: 0;
+        color: #94a3b8;
+        font-size: 16px;
+      }
+
+      .remove-field:hover {
+        color: #b91c1c;
+        background: #fef2f2;
+      }
+
+      .add-field {
+        margin-top: 5px;
+      }
+
+      .editor-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
+      }
+
+      .left-actions,
+      .right-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .empty-editor {
+        padding: 70px 30px;
+        text-align: center;
+        color: #64748b;
+      }
+
+      .empty-editor h2 {
+        margin: 0 0 7px;
+        color: #334155;
+        font-size: 18px;
+      }
+
+      .empty-editor p {
+        margin: 0;
+        font-size: 13px;
+      }
+
+      .info {
+        margin-top: 18px;
+        padding: 13px 15px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 7px;
+        color: #64748b;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .footer {
+        margin-top: 24px;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 11px;
+      }
+
+      @media (max-width: 750px) {
+        .topbar {
+          flex-direction: column;
+        }
+
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .field-row {
+          grid-template-columns: 1fr;
+        }
+
+        .remove-field {
+          width: 100%;
+        }
+      }
+    </style>
   </head>
+
   <body>
     <main class="page">
       <header class="topbar">
-        <div>
-          <h1>FillMyForm</h1>
-          <p>Manage the information used to fill your forms</p>
+        <div class="brand">
+          <h1>Fill My Form</h1>
+          <p>Manage the information used to fill your forms.</p>
         </div>
 
         <div class="top-actions">
-          <button>Open Test Form</button>
-          <button>+ New Profile</button>
+          <button id="testFormBtn" type="button">Open Test Form</button>
+          <button id="newProfileButton" type="button" class="primary-btn">
+            + New Profile
+          </button>
         </div>
       </header>
 
       <section class="layout">
         <aside class="card sidebar">
-          <div>
+          <div class="sidebar-header">
             <h2>Profiles</h2>
           </div>
-          <ul></ul>
+
+          <ul id="profileList"></ul>
         </aside>
 
         <section class="card editor">
-          <div>
+          <div id="emptyEditor" class="empty-editor">
             <h2>No profile selected</h2>
             <p>Create a profile to start saving your form information.</p>
           </div>
 
-          <div>
-            <h2>Profile</h2>
-            <p>Add the information you commonly enter in to forms.</p>
+          <div id="profileEditor" style="display: none">
+            <div class="editor-header">
+              <div>
+                <h2 id="currentProfileName">Profile</h2>
+                <p>Add the information you commonly enter into forms.</p>
+              </div>
+            </div>
+
+            <div id="fieldsContainer" class="fields"></div>
+
+            <button id="addFieldBtn" type="button" class="add-field">
+              + Add Field
+            </button>
+
+            <div class="editor-actions">
+              <div class="left-actions">
+                <button id="deleteProfileBtn" type="button" class="danger-btn">
+                  Delete Profile
+                </button>
+              </div>
+
+              <div class="right-actions">
+                <button id="saveProfileBtn" type="button" class="primary-btn">
+                  Save Profile
+                </button>
+              </div>
+            </div>
           </div>
-
-          <button class="add-field">+ Add Field</button>
-
-          <button class="delete-btn">Delete Profile</button>
-
-          <button class="save-btn">Save Profile</button>
         </section>
       </section>
 
       <div class="info">
-        FillMyForm stores your profiles locally in the browser. Select a profile
-        from the extension popup and the <strong>FillMyForm</strong> to fill
-        supported HTML form fields. The extension does not submit forms
+        Fill My Form stores your profiles locally in the browser. Select a
+        profile from the extension popup and use <strong>Fill My Form</strong>
+        to fill supported HTML form fields. The extension does not submit forms
         automatically.
       </div>
 
-      <footer class="footer">FillMyForm V1</footer>
+      <footer class="footer">Fill My Form · Version 1.0.0</footer>
     </main>
+
     <script type="module" src="./options.ts"></script>
   </body>
 </html>

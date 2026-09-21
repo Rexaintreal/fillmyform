@@ -30,7 +30,7 @@ async function loadProfiles(): Promise<void> {
     profileSelect.innerHTML = '';
 
     if (profiles.length === 0) {
-        profileSelect.innerHTML = '<option value="">No profiles yet</options>';
+        profileSelect.innerHTML = '<option value="">No profiles yet</option>';
         profileSelect.disabled = true;
         fillButton.disabled = true;
         setStatus('Create a profile first - see Manage Profiles below.');
@@ -93,7 +93,7 @@ fillButton.addEventListener('click', async () => {
         return;
     }
 
-    const emptyProfile = profile.fields.every(f => !f.value);
+    const emptyProfile = profile.fields.every(f => !f.value && (!f.values || f.values.length === 0));
     if (emptyProfile) {
         setStatus(`"${profile.profileName}" has no value saved yet.`, 'error');
         return;

@@ -43,3 +43,17 @@ export async function getSyncSettings(): Promise<SyncSettings> {
 export async function saveSyncSettings(settings: SyncSettings): Promise<void> {
   await chrome.storage.local.set({ [STORAGE_KEY_SYNC]: settings });
 }
+
+export async function createNewProfile(
+  profileName = "New Profile",
+): Promise<Profile> {
+  const profile: Profile = {
+    profileId: crypto.randomUUID(),
+    profileName,
+    lastUpdated: new Date().toISOString(),
+    fields: [],
+  };
+
+  await saveProfile(profile);
+  return profile;
+}
