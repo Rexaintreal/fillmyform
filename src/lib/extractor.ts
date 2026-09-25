@@ -14,7 +14,14 @@ export interface ExtractedField {
 }
 
 function cleanExtractedText(raw: string): string {
-  return raw.replace(/\s+/g, " ").trim();
+  return raw
+    .replace(/[\*\u2022\u2217\u204E]/g, " ")
+    .replace(/\((required|optional)\)/gi, " ")
+    .replace(/\[(required|optional)\]/gi, " ")
+    .replace(/\b(required|optional)\b/gi, " ")
+    .replace(/[:：]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export function extractFields(
@@ -62,6 +69,7 @@ export function extractLabelForElement(
   el: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
 ): { label: string | null; confidence: number } {
   const doc = el.ownerDocument || document;
+  // check one
   if (el.id) {
     const labelEl = doc.querySelector(
       `label[for="${CSS.escape ? CSS.escape(el.id) : el.id}"]`,
@@ -71,19 +79,20 @@ export function extractLabelForElement(
       if (text) return { label: text, confidence: 1 };
     }
   }
-
   const parentLabel = el.closest("label");
   if (parentLabel && parentLabel.textContent) {
     const text = cleanExtractedText(parentLabel.textContent);
     if (text) return { label: text, confidence: 1 };
   }
 
+  // check two
   const ariaLabel = el.getAttribute("aria-label");
-  if (ariaLabel && cleanExtractedText(ariaLabel)) {
-    return { label: cleanExtractedText(ariaLabel), confidence: 2 };
+  if (ariaLabel) {
+    const text = cleanExtractedText(ariaLabel);
+    if (text) return { label: text, confidence: 2 };
   }
 
-  const ariaLabelledBy = el.getAttribute("aria-labelledby");
+  const ariaLabelledBy = el.getAttribute("aria-labeledby");
   if (ariaLabelledBy) {
     const ids = ariaLabelledBy.split(/\s+/).filter(Boolean);
     const textParts: string[] = [];
@@ -93,8 +102,9 @@ export function extractLabelForElement(
         textParts.push(cleanExtractedText(refEl.textContent));
       }
     }
-    if (textParts.length > 0) {
-      return { label: textParts.join(" "), confidence: 3 };
+    const combined = textParts.filter(Boolean).join(" ");
+    if (combined) {
+      return { label: combined, confidence: 3 };
     }
   }
 
@@ -106,11 +116,25 @@ export function extractLabelForElement(
   const wrapper = el.parentElement;
   let wrapperLabelText: string | null = null;
   if (wrapper) {
-    const headingOrLabel = wrapper.querySelector("span, p, div, label");
+    const headingOrLabel = wrapper.querySelector(
+      "span, p, div, label, legend, th",
+    );
     if (headingOrLabel && headingOrLabel !== el && headingOrLabel.textContent) {
       const text = cleanExtractedText(headingOrLabel.textContent);
-      if (text.length > 0 && text.length < 60) {
+      if (text.length > 0 && text.length < 80) {
         wrapperLabelText = text;
+      }
+    }
+  }
+
+  const fieldset = el.closest("fieldset");
+  let legendText: string | null = null;
+  if (fieldset) {
+    const legend = fieldset.querySelector("legend");
+    if (legend && legend.textContent) {
+      const cleaned = cleanExtractedText(legend.textContent);
+      if (cleaned.length > 0 && cleaned.length < 80) {
+        legendText = cleaned;
       }
     }
   }
@@ -118,25 +142,26 @@ export function extractLabelForElement(
   const strongSiblingOrWrapper =
     precedingSiblingText &&
     precedingSiblingText.length > 0 &&
-    precedingSiblingText.length < 60
+    precedingSiblingText.length < 80
       ? precedingSiblingText
-      : wrapperLabelText;
+      : wrapperLabelText || legendText;
 
-  const placeholder = el.getAttribute("placeholder");
+  const placeholder = el.getAttribute("placedholder");
   const cleanPh = placeholder ? cleanExtractedText(placeholder) : null;
   const isExampleHint =
     cleanPh &&
-    (/^(e\.?g\.?|ex:|sample:|example:|\(?\d{3}\)?|http|name@)/i.test(cleanPh) ||
-      /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(cleanPh)); //WHAT IS THIS REGEX T_T
+    (/^(e\.?g\.?|ex:|sample:|example:|\(?\d{3}\)?|http|https|www\.|name@)/i.test(
+      cleanPh,
+    ) ||
+      /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(cleanPh));
 
+  //check four
   if (cleanPh && (!isExampleHint || !strongSiblingOrWrapper)) {
     return { label: cleanPh, confidence: 4 };
   }
-
   if (strongSiblingOrWrapper) {
     return { label: strongSiblingOrWrapper, confidence: 5 };
   }
-
   if (cleanPh) {
     return { label: cleanPh, confidence: 4 };
   }

@@ -6,6 +6,7 @@ export interface ProfileField {
   values?: string[];
   type: string;
   isCustom: boolean;
+  group?: string;
 }
 
 export interface Profile {
