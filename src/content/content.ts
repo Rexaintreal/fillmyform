@@ -65,7 +65,7 @@ function fillForm(profile: Profile): FillSummary {
       const primaryValue = values[0];
 
       matchedCount++;
-      const filled = false
+      let filled = false
       
       if(field.adapter === 'google_forms'){
         filled = fillGoogleFormField(field.element as HTMLElement, primaryValue);       
