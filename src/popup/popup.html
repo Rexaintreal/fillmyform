@@ -321,6 +321,92 @@
         line-height: 1.4;
       }
 
+      .result-stats {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .stat-pill {
+        flex: 1;
+        padding: 6px 4px;
+        border-radius: var(--r-sm);
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+
+      .stat-pill-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+      }
+
+      .stat-pill-icon {
+        font-size: 0.72rem;
+        font-weight: 600;
+        line-height: 1;
+        color: var(--text-3);
+      }
+
+      .stat-pill-val {
+        font-size: 0.98rem;
+        font-weight: 600;
+        color: var(--text-1);
+        line-height: 1,1;
+      }
+      .stat-pill-lbl {
+        font-size: 0.58rem;
+        color: var(--text-3);
+        margin-top: 2px;
+        text-transform: uppercase;
+        letter-spacing: 0.04;
+        font-weight: 600;
+      }
+
+      .stat-pill-filled .stat-pill-icon {
+        color: var(--success);
+      }
+
+      .stat-pill-review .stat-pill-icon {
+        color: var(--warning);
+      }
+
+      .stat-pill-skipped .stat-pill-icon {
+        color: var(--text-3);
+      }
+
+      .legend-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 6px;
+        padding: 5px 8px;
+        border-radius: var(--r-sm);
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        font-size: 0.63rem;
+        color: var(--text-3);
+        justify-content: space-around;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .legend-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
       
     </style>
   </head>
@@ -377,39 +463,63 @@
 
     <div class="result-section" id="resultSection" role="status" aria-live="polite">
       <div class="status-bar" id="statusBar">
-        <span class="status-icon" id="StatusIcon" aria-hidden="true"></span>
-        <div style="flex: 1;">
+        <span class="status-icon" id="statusIcon" aria-hidden="true"></span>
+        <div style="flex:1;">
           <span class="status-text" id="statusText"></span>
-          <div class="statusActionWrap" style="display: none;">
+          <div id="statusActionWrap" style="display:none;">
             <button id="statusActionBtn" class="status-action-btn"></button>
           </div>
         </div>
       </div>
+      <div class="result-stats" id="resultStats" style="display:none;">
+        <div class="stat-pill filled" id="statPillFilled" title="High-confidence exact matches">
+          <div class="stat-pill-header">
+            <span class="stat-pill-icon">✓</span>
+            <span class="stat-pill-val" id="statFilled">0</span>
+          </div>
+          <div class="stat-pill-lbl">Filled</div>
+        </div>
+        <div class="stat-pill review" id="statPillReview" title="Close matches or fields with multiple options needing review">
+          <div class="stat-pill-header">
+            <span class="stat-pill-icon">⚠</span>
+            <span class="stat-pill-val" id="statReview">0</span>
+          </div>
+          <div class="stat-pill-lbl">Review</div>
+        </div>
+        <div class="stat-pill skipped" id="statPillSkipped" title="Fields not matched in profile">
+          <div class="stat-pill-header">
+            <span class="stat-pill-icon">○</span>
+            <span class="stat-pill-val" id="statSkipped">0</span>
+          </div>
+          <div class="stat-pill-lbl">Unmatched</div>
+        </div>
+      </div>
+      <div class="legend-row" id="legendRow" style="display:none;">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--success);"></div>
+          <span>Exact match</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--warning);"></div>
+          <span>Review needed</span>
+        </div>
+      </div>
     </div>
-    <div class="result-stats" id="resultStats" style="display: none;">
-      <div class="stat-pill filled" id="statPillFilled" title="High-confidence exact matches">
-        <div class="stat-pill-header">
-          <span class="stat-pill-icon">✓</span>
-          <span class="stat-pill-val" id="statFilled">0</span>
-        </div>
-        <div class="stat-pill-lbl">Filled</div>
+
+    <footer class="popup-footer">
+      <div class="footer-actions">
+        <button id="optionsLink" class="footer-link" aria-label="Manage Profiles">
+          ⚙ Manage Profile
+        </button>
+        <span class="footer-sep" aria-hidden="true">•</span>
+        <a href="/public/privary.html" class="footer-link" target="_blank" aria-label="Privacy Policy">
+          Privacy
+        </a>
       </div>
-      <div class="stat-pill review" id="statPillReview" title="Close matches or fields with multiple options needing review">
-        <div class="stat-pill-header">
-          <span class="stat-pill-icon">⚠</span>
-          <span class="stat-pill-val">0</span>
-        </div>
-        <div class="stat-pill-lbl">Review</div>
-      </div>
-      <div class="stat-pill skipped" id="statPillSkipped" title="Fields not matched in profile">
-        <div class="stat-pill-header">
-          <span class="stat-pill-icon">○</span>
-          <span class="stat-pill-val" id="statSkipped">0</span>
-        </div>
-        <div class="stat-pill-lbl">Unmatched</div>
-      </div>
-    </div>
-    
+      <button id="testFormBtn" class="test-link" aria-label="Open sample test form">
+        Test form ↗
+      </button>
+    </footer>
     <script type="module" src="./popup.ts"></script>
   </body>
 </html>
