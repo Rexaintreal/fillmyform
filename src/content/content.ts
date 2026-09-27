@@ -7,13 +7,16 @@ import {
   attachValuePicker,
 } from "../lib/filler";
 import { Profile, getFieldValues } from "../lib/schema";
+import { fillGoogleFormField } from "../adapters/googleForms";
 
 export interface FillSummary {
   success: boolean;
   error?: "NO_FIELDS";
   totalFields: number;
   matchedCount: number;
+  reviewCount: number;
   filledCount: number;
+  unmatchedCount: number;
 }
 
 function fillForm(profile: Profile): FillSummary {
@@ -25,6 +28,8 @@ function fillForm(profile: Profile): FillSummary {
       totalFields: 0,
       matchedCount: 0,
       filledCount: 0,
+      reviewCount: 0,
+      unmatchedCount: 0,
     };
   }
 
@@ -33,6 +38,7 @@ function fillForm(profile: Profile): FillSummary {
   const fieldById = new Map(profile.fields.map((f) => [f.fieldId, f]));
   let matchedCount = 0;
   let filledCount = 0;
+  let reviewCount = 0;
 
   for (const field of fields) {
     try {
@@ -59,15 +65,26 @@ function fillForm(profile: Profile): FillSummary {
       const primaryValue = values[0];
 
       matchedCount++;
-      const filled = fillField(field.element, primaryValue);
+      const filled = false
+      
+      if(field.adapter === 'google_forms'){
+        filled = fillGoogleFormField(field.element as HTMLElement, primaryValue);       
+      } else{
+        filled = fillField(field.element, primaryValue);
+      }
 
       if (filled) {
-        const confidence = values.length > 1 ? "medium" : match.confidence;
+        const isReview = values.length > 1 || match.confidence === "medium";
+        const confidence = isReview ? "medium" : "high";
         highlightField(field.element, confidence);
-        if (
-          values.length > 1 &&
-          !(field.element.getAttribute("role") === "radiogroup")
-        ) {
+        if (isReview){
+          reviewCount++;  
+        } 
+        if(
+          values.length > 1 && 
+          !(field.element.getAttribute("role") === "radiogroup") &&
+          !(field.element.getAttribute("role") === "group")
+        ){
           attachValuePicker(field.element, values);
         }
         filledCount++;
@@ -86,6 +103,8 @@ function fillForm(profile: Profile): FillSummary {
     totalFields: fields.length,
     matchedCount,
     filledCount,
+    reviewCount,
+    unmatchedCount: fields.length - filledCount,
   };
 }
 
