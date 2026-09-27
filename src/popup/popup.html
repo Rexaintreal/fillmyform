@@ -651,7 +651,7 @@
           </select>
         </div>
         <div class="profile-mini-progress" aria-hidden="true">
-          <div class="profile-mini-fill" id="ProfileMiniFill"></div>
+          <div class="profile-mini-fill" id="profileMiniFill"></div>
         </div>
         <div class="profile-mini-label" id="profileMiniLabel">-</div>
       </div>
@@ -718,13 +718,17 @@
 
     <footer class="popup-footer">
       <div class="footer-actions">
-        <i class="fa-solid fa-gear"></i> Manage Profile
+        <a href="#" id="optionsLink" class="footer-link" aria-label="Manage Profile">
+          <i class="fa-solid fa-gear"></i> Manage Profile
+        </a>
         <span class="footer-sep" aria-hidden="true">•</span>
         <a href="/public/privary.html" class="footer-link" target="_blank" aria-label="Privacy Policy">
           Privacy
         </a>
       </div>
+      <button type="button" id="testFormBtn" class="footer-link">
         Test form <i class="fa-solid fa-arrow-up-right-from-square"></i>
+      </button>
     </footer>
     <script type="module" src="popup.ts"></script>
   </body>

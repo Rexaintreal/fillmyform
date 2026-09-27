@@ -8,19 +8,4 @@ export default defineConfig({
       manifest,
     }),
   ],
-  build: {
-    rollupOptions: {
-      input: {
-        content: "src/content/content.ts",
-      },
-      output: {
-        entryFileNames: (chunk) => {
-          if (chunk.name === "content") {
-            return "content.js";
-          }
-          return "assets/[name]-[hash].js";
-        },
-      },
-    },
-  },
 });

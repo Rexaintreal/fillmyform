@@ -3,7 +3,8 @@ import { Profile, ProfileField } from "./schema";
 const AUTOCOMPLETE_MAP: Record<string, string> = {
   "given-name": "first_name",
   "family-name": "last_name",
-  "additional-name": "first_name",
+  "additional-name": "middle_name",
+  "nickname": "preferred_name",
   name: "full_name",
   email: "email",
   tel: "phone",
@@ -17,6 +18,9 @@ const AUTOCOMPLETE_MAP: Record<string, string> = {
   country: "country",
   "country-name": "country",
   bday: "dob",
+  organization: "company",
+  "organization-title": "job_title",
+  url: "portfolio",
 };
 
 export function normalizeText(text: string): string {
