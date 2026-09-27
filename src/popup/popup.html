@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fill My Form</title>
@@ -14,24 +15,24 @@
         padding: 0;
       }
       :root {
-        --bg: #09090b;
-        --surface: #09090b;
-        --surface2: #1212125;
-        --surface3: #18181b;
-        --border: #27272a;
-        --border-2: #3f3f46;
-        --accent: #fafafa;
+        --bg:          #09090b;
+        --surface:     #09090b;
+        --surface-2:   #121215;
+        --surface-3:   #18181b;
+        --border:      #27272a;
+        --border-2:    #3f3f46;
+        --accent:      #fafafa;
         --accent-dark: #e4e4e7;
-        --text-1: #fafafa;
-        --text-2: #a1a1a1;
-        --text-3: #71717a;
-        --success: #22c55e;
-        --warning: #eab308;
-        --danger: #ef4444;
-        --r: 8px;
-        --r-sm: 6px;
-        --ease: cubic-bezier(0.16, 1, 0.3, 1);
-        --t: 0.15s;
+        --text-1:      #fafafa;
+        --text-2:      #a1a1aa;
+        --text-3:      #71717a;
+        --success:     #22c55e;
+        --warning:     #eab308;
+        --danger:      #ef4444;
+        --r:           8px;
+        --r-sm:        6px;
+        --ease:        cubic-bezier(0.16, 1, 0.3, 1);
+        --t:           0.15s;
       }
 
       html {
@@ -101,7 +102,7 @@
         font-size: 0.62rem;
         color: var(--text-3);
         font-weight: 500;
-        background: var(--surface3);
+        background: var(--surface-3);
         border: 1px solid var(--border);
         padding: 1px 5px;
         border-radius: 4px;
@@ -152,7 +153,7 @@
 
       .profile-select {
         width: 100%;
-        background: var(--surface2);
+        background: var(--surface-);
         border: 1px solid var(--border);
         border-radius: var(--r-sm);
         color: var(--text-1);
@@ -174,7 +175,7 @@
 
       .profile-mini-progess {
         height: 2px;
-        background: var(--surface3);
+        background: var(--surface-3);
         border-radius: 9999px;
         margin-top: 6px;
         overflow: hidden;
@@ -217,7 +218,7 @@
         background: #d4d4d8;
       }
       .fill-btn:disabled {
-        background: var(--surface3);
+        background: var(--surface-3);
         border-color: var(--border);
         color: var(--text-3);
         cursor: not-allowed;
@@ -251,6 +252,372 @@
       .fill-btn.loading .fill-btn-label {
         opacity: 0.7;
       }
+
+      .result-section {
+        padding: 12px 16px 0;
+        display: none;
+      }
+
+      .result-section.visible {
+        display: block;
+      }
+
+      .status-bar {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: var(--r-sm);
+        font-size: 0.74rem;
+        font-weight: 400;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        color: var(--text-2);
+        animation: fade-in 0.15s var(--ease);
+      }
+
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(-2px);
+        }
+        to {
+          opacity: 1;
+          transform: translate(0);
+        }
+      }
+
+      .status-bar.success {
+        border-color: rgba(34, 197, 94, 0.3);
+        background: rgba(34, 197, 94, 0, 0.05);
+        color: #dcfce7;
+      }
+
+      .status-bar.error{
+        border-color: rgba(239, 68, 68, 0.3);
+        background: rgba(239, 68, 68, 0.05);
+        color: #fee2e2;
+      }
+
+      .status-bar.warning {
+        border-color: rgba(234, 179, 8, 0.3);
+        background: rgba(234, 170, 8, 0.05);
+        column-rule: #fef9c3;
+      }
+      .status-bar.loading {
+        border-color: var(--border);
+        background: var(--surface-2);
+        color: var(--text-2);
+      }
+
+      .status-icon {
+        font-size: 0.82rem;
+        font-weight: 700;
+        flex-shrink: 0;
+        line-height: 1.4;
+      }
+
+      .status-text {
+        flex: 1;
+        line-height: 1.4;
+      }
+
+      .result-stats {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .stat-pill {
+        flex: 1;
+        padding: 6px 4px;
+        border-radius: var(--r-sm);
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+
+      .stat-pill-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+      }
+
+      .stat-pill-icon {
+        font-size: 0.72rem;
+        font-weight: 600;
+        line-height: 1;
+        color: var(--text-3);
+      }
+
+      .stat-pill-val {
+        font-size: 0.98rem;
+        font-weight: 600;
+        color: var(--text-1);
+        line-height: 1,1;
+      }
+      .stat-pill-lbl {
+        font-size: 0.58rem;
+        color: var(--text-3);
+        margin-top: 2px;
+        text-transform: uppercase;
+        letter-spacing: 0.04;
+        font-weight: 600;
+      }
+
+      .stat-pill-filled .stat-pill-icon {
+        color: var(--success);
+      }
+
+      .stat-pill-review .stat-pill-icon {
+        color: var(--warning);
+      }
+
+      .stat-pill-skipped .stat-pill-icon {
+        color: var(--text-3);
+      }
+
+      .legend-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 6px;
+        padding: 5px 8px;
+        border-radius: var(--r-sm);
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        font-size: 0.63rem;
+        color: var(--text-3);
+        justify-content: space-around;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .legend-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      .onboarding-card {
+        margin: 14px 16px;
+        padding: 20px 16px 18px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        text-align: center;
+      }
+
+      .onboarding-glow {
+        display: none;
+      }
+
+      .onboarding-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--r-sm);
+        background: #fafafa;
+        color: #09090b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0 auto 10px;
+      }
+
+      .onboarding-title {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: var(--text-1);
+        margin-bottom: 4px;
+        line-height: 1.35px;
+      }
+
+      .onboarding-sub {
+        font-size: 0.72;
+        color: var(--text-3);
+        margin-bottom: 14px;
+        line-height: 1.4;
+      }
+
+      .onboarding-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        width: 100%;
+        padding: 8px 14px;
+        background: #fafafa;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--r-sm);
+        color: #09090b;
+        font-family: inherit;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color var(--t) var(--ease);
+      }
+
+      .onboarding-btn:hover {
+        background: #e4e4e7;
+      }
+
+      .onboarding-btn .btn-arrow {
+        font-size: 0.85rem;
+      }
+
+      .status-action-btn {
+        margin-top: 5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        background: var(--surface-3);
+        border: 1px solid var(--border-2);
+        color: var(--text-1);
+        font-size: 0.66rem;
+        font-weight: 500;
+        padding: 3px 7px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background-color var(--t) var(--ease);
+      }
+
+      .status-action-btn:hover {
+        background: var(--border-2);
+      }
+
+      .platform-row {
+        padding: 9px 16px 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .platform-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-size: 0.65rem;
+        font-weight: 500;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        color: var(--border);
+        color: var(--text-3);
+      }
+
+      .platform-badge.supported {
+        border-color: var(--border);
+        color: var(--border);
+        color: var(--text-2);
+      }
+
+      .platform-badge.unsupported {
+        border-color: var(--border);
+        color: var(--text-3);
+      }
+
+      .platform-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--text-3);
+      }
+
+      .platform-badge.supported .platform-dot {
+        background: var(--success);
+      }
+
+      .popup-footer {
+        padding: 10px 16px 12px;
+        margin-top: 12px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        background: var(--surface);
+      }
+
+      .footer-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .footer-link {
+        font-size: 0.7rem;
+        color: var(--text-3);
+        text-decoration: none;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-family: inherit;
+        padding: 0;
+        transition: color var(--t) var(--ease);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .footer-link:hover {
+        color: var(--text-1);
+      }
+
+      .footer-sep {
+        color: var(--border);
+        font-size: 0.55rem;
+      }
+
+      .test-link {
+        font-size: 0.68rem;
+        color: var(--text-3);
+        text-decoration: none;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-family: inherit;
+        padding: 0;
+        transition: color var(--t) var(--ease);
+      }
+
+      .test-link:hover {
+        color: var(--text-1);
+      }
+
+      :focus-visible {
+        outline: 1px solid #71717a;
+        outline-offset: 1px;
+      }
+
+      button:focus-visible,
+      select:focus-visible,
+      a:focus-visible {
+        outline: 1px solid #71717a;
+        outline-offset: 1px;
+      }
+
+      .fill-icon, .btn-arrow, .stat-pill-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
     </style>
   </head>
   <body>
@@ -267,12 +634,12 @@
 
     <div class="onboarding-card" id="onboardingCard" style="display: none;" role="region" aria-label="First-run setup">
       <div class="onboarding-glow" aria-hidden="true"></div>
-      <div class="onboarding-icon" aria-hidden="true">✦</div>
+      <div class="onboarding-icon" ...><i class="fa-solid fa-wand-magic-sparkles"></i></div>
       <div class="onboarding-title">Set up your profile once.</div>
       <div class="onboarding-sub">Fill supported forms in one click.</div>
       <button id="onboardingCreateBtn" class="onboarding-btn">
         <span>Create Profile</span>
-        <span class="btn-arrow" aria-hidden="true">-></span>
+        <i class="fa-solid fa-arrow-right btn-arrow" aria-hidden="true"></i>
       </button>
     </div>
     <div id="mainFormSection">
@@ -297,14 +664,68 @@
 
       <div class="fill-section" id="fillSection">
         <button id="fillButton" class="fill-btn" disabled aria-label="Fill this form">
-          <span class="fill-icon" aria-hidden="true">✦</span>
+          <i class="fa-solid fa-wand-magic-sparkles fill-icon" aria-hidden="true"></i>
           <div class="fill-btn-spinner" aria-hidden="true"></div>
           <span class="fill-btn-label">Fill My Form</span>
         </button>
       </div>
     </div>
 
-    
+    <div class="result-section" id="resultSection" role="status" aria-live="polite">
+      <div class="status-bar" id="statusBar">
+        <span class="status-icon" id="statusIcon" aria-hidden="true"></span>
+        <div style="flex:1;">
+          <span class="status-text" id="statusText"></span>
+          <div id="statusActionWrap" style="display:none;">
+            <button id="statusActionBtn" class="status-action-btn"></button>
+          </div>
+        </div>
+      </div>
+      <div class="result-stats" id="resultStats" style="display:none;">
+        <div class="stat-pill filled" id="statPillFilled" title="High-confidence exact matches">
+          <div class="stat-pill-header">
+            <i class="fa-solid fa-check stat-pill-icon"></i>
+            <span class="stat-pill-val" id="statFilled">0</span>
+          </div>
+          <div class="stat-pill-lbl">Filled</div>
+        </div>
+        <div class="stat-pill review" id="statPillReview" title="Close matches or fields with multiple options needing review">
+          <div class="stat-pill-header">
+            <i class="fa-solid fa-triangle-exclamation stat-pill-icon"></i>
+            <span class="stat-pill-val" id="statReview">0</span>
+          </div>
+          <div class="stat-pill-lbl">Review</div>
+        </div>
+        <div class="stat-pill skipped" id="statPillSkipped" title="Fields not matched in profile">
+          <div class="stat-pill-header">
+            <i class="fa-regular fa-circle stat-pill-icon"></i>
+            <span class="stat-pill-val" id="statSkipped">0</span>
+          </div>
+          <div class="stat-pill-lbl">Unmatched</div>
+        </div>
+      </div>
+      <div class="legend-row" id="legendRow" style="display:none;">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--success);"></div>
+          <span>Exact match</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--warning);"></div>
+          <span>Review needed</span>
+        </div>
+      </div>
+    </div>
+
+    <footer class="popup-footer">
+      <div class="footer-actions">
+        <i class="fa-solid fa-gear"></i> Manage Profile
+        <span class="footer-sep" aria-hidden="true">•</span>
+        <a href="/public/privary.html" class="footer-link" target="_blank" aria-label="Privacy Policy">
+          Privacy
+        </a>
+      </div>
+        Test form <i class="fa-solid fa-arrow-up-right-from-square"></i>
+    </footer>
     <script type="module" src="./popup.ts"></script>
   </body>
 </html>
