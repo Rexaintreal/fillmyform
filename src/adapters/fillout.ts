@@ -65,7 +65,7 @@ export function extractFilloutFields(root: Document | Element = document): Extra
             }
         }
     }
-    return results;
+    return results
 }
 
 
