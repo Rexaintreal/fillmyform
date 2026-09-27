@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fill My Form</title>
@@ -611,6 +612,12 @@
         outline-offset: 1px;
       }
 
+      .fill-icon, .btn-arrow, .stat-pill-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
     </style>
   </head>
   <body>
@@ -627,12 +634,12 @@
 
     <div class="onboarding-card" id="onboardingCard" style="display: none;" role="region" aria-label="First-run setup">
       <div class="onboarding-glow" aria-hidden="true"></div>
-      <div class="onboarding-icon" aria-hidden="true">✦</div>
+      <div class="onboarding-icon" ...><i class="fa-solid fa-wand-magic-sparkles"></i></div>
       <div class="onboarding-title">Set up your profile once.</div>
       <div class="onboarding-sub">Fill supported forms in one click.</div>
       <button id="onboardingCreateBtn" class="onboarding-btn">
         <span>Create Profile</span>
-        <span class="btn-arrow" aria-hidden="true">-></span>
+        <i class="fa-solid fa-arrow-right btn-arrow" aria-hidden="true"></i>
       </button>
     </div>
     <div id="mainFormSection">
@@ -657,7 +664,7 @@
 
       <div class="fill-section" id="fillSection">
         <button id="fillButton" class="fill-btn" disabled aria-label="Fill this form">
-          <span class="fill-icon" aria-hidden="true">✦</span>
+          <i class="fa-solid fa-wand-magic-sparkles fill-icon" aria-hidden="true"></i>
           <div class="fill-btn-spinner" aria-hidden="true"></div>
           <span class="fill-btn-label">Fill My Form</span>
         </button>
@@ -677,21 +684,21 @@
       <div class="result-stats" id="resultStats" style="display:none;">
         <div class="stat-pill filled" id="statPillFilled" title="High-confidence exact matches">
           <div class="stat-pill-header">
-            <span class="stat-pill-icon">✓</span>
+            <i class="fa-solid fa-check stat-pill-icon"></i>
             <span class="stat-pill-val" id="statFilled">0</span>
           </div>
           <div class="stat-pill-lbl">Filled</div>
         </div>
         <div class="stat-pill review" id="statPillReview" title="Close matches or fields with multiple options needing review">
           <div class="stat-pill-header">
-            <span class="stat-pill-icon">⚠</span>
+            <i class="fa-solid fa-triangle-exclamation stat-pill-icon"></i>
             <span class="stat-pill-val" id="statReview">0</span>
           </div>
           <div class="stat-pill-lbl">Review</div>
         </div>
         <div class="stat-pill skipped" id="statPillSkipped" title="Fields not matched in profile">
           <div class="stat-pill-header">
-            <span class="stat-pill-icon">○</span>
+            <i class="fa-regular fa-circle stat-pill-icon"></i>
             <span class="stat-pill-val" id="statSkipped">0</span>
           </div>
           <div class="stat-pill-lbl">Unmatched</div>
@@ -711,17 +718,13 @@
 
     <footer class="popup-footer">
       <div class="footer-actions">
-        <button id="optionsLink" class="footer-link" aria-label="Manage Profiles">
-          ⚙ Manage Profile
-        </button>
+        <i class="fa-solid fa-gear"></i> Manage Profile
         <span class="footer-sep" aria-hidden="true">•</span>
         <a href="/public/privary.html" class="footer-link" target="_blank" aria-label="Privacy Policy">
           Privacy
         </a>
       </div>
-      <button id="testFormBtn" class="test-link" aria-label="Open sample test form">
-        Test form ↗
-      </button>
+        Test form <i class="fa-solid fa-arrow-up-right-from-square"></i>
     </footer>
     <script type="module" src="./popup.ts"></script>
   </body>
