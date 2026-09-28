@@ -13,8 +13,8 @@ export function isGoogleForms(root: Document | Element = document): boolean {
     }
 
     return !!(
-        root.querySelector('form[action*="fromResponse"]') ||
-        root.querySelector('.freebirdFormviwerViewFormContent') || 
+        root.querySelector('form[action*="formResponse"]') ||
+        root.querySelector('.freebirdFormviewerViewFormContent') || 
         root.querySelector('div[role="list"] div[role="listitem"] div[role="heading"]') ||
         root.querySelector('div[jsmodel] div[role="heading"]')
     );
@@ -22,7 +22,8 @@ export function isGoogleForms(root: Document | Element = document): boolean {
 
 export function cleanQuestionTitle(raw: string): string {
     return raw
-    .replace()
+    .replace(/[\*\u2217]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -31,7 +32,7 @@ export function extractGoogleFormsFields(
 ): ExtractedField[] {
     const listItems = Array.from(
         root.querySelectorAll(
-            'div[role="listitem"], div[jsmodel], .freebridFormviewerComponentsQuestionBaseRoot',
+            'div[role="listitem"], div[jsmodel], .freebirdFormviewerComponentsQuestionBaseRoot',
         ),
     );
 
@@ -48,7 +49,7 @@ export function extractGoogleFormsFields(
         if(!label) continue;
 
         const inputEl = item.querySelector<HTMLInputElement>(
-            'input.whsOnd, input[type="text"], input[type="email"], input[type="date"], input[type="tel"',
+            'input.whsOnd, input[type="text"], input[type="email"], input[type="date"], input[type="tel"]',
         );
         if( inputEl && !seenElements.has(inputEl) ){
             seenElements.add(inputEl);
@@ -79,7 +80,7 @@ export function extractGoogleFormsFields(
         }
 
         const radioGroupEl = item.querySelector<HTMLElement>(
-            'div[role"radiogroup"], .freebirdFormviewerComponentsQuestionRadioRoot',
+            'div[role="radiogroup"], .freebirdFormviewerComponentsQuestionRadioRoot',
         );
         if( radioGroupEl && !seenElements.has(radioGroupEl)){
             seenElements.add(radioGroupEl);
@@ -126,9 +127,8 @@ export function extractGoogleFormsFields(
             });
             continue;
         }
-        return results;
-
     }
+    return results;
 }
 
 function triggerWidgetClick(target: HTMLElement): void {
@@ -166,12 +166,12 @@ export function fillGoogleFormField(el: HTMLElement, value: string): boolean {
         }
         el.dispatchEvent( new Event ('input', { bubbles: true }));
         el.dispatchEvent( new Event('change', { bubbles: true}));
-        el.dispatchEvent( new Event('blue', { bubbles: true}));
+        el.dispatchEvent( new Event('blur', { bubbles: true}));
         return true;
     }
     const options = Array.from(
         el.querySelectorAll<HTMLElement> (
-            'div[role="radio"], div[role="checkbox"], div[role="option"], label,'
+            'div[role="radio"], div[role="checkbox"], div[role="option"], label'
         ),
     );
     if (options.length > 0) {

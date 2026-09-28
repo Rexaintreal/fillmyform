@@ -11,8 +11,8 @@ export function isTally(root: Document | Element = document): boolean {
     return!!(
         root.querySelector('[data-tally-form-id]') ||
         root.querySelector('.tally-form') || 
-        root.querySelector('form[action*=tally') ||
-        root.querySelector('[data-testid*="tally"')
+        root.querySelector('form[action*="tally"]') ||
+        root.querySelector('[data-testid*="tally"]')
     );
 }
 
@@ -25,11 +25,11 @@ function cleanTallyLabel(raw: string): string{
 
 export function extractTallyFields(root: Document | Element = document): ExtractedField[] {
     const results: ExtractedField[] = [];
-    const seenElements = new Set<Elements>();
+    const seenElements = new Set<Element>();
 
     const questionBlocks = Array.from(root.querySelectorAll(
         '[data-testid*="question"], .tally-question, .tally-block, ' +
-        '[class*=QuestionBlock"], [class*=question-block"], ' +
+        '[class*="QuestionBlock"], [class*="question-block"], ' +
         'div[data-block-type]' 
     ));
 
@@ -43,7 +43,7 @@ export function extractTallyFields(root: Document | Element = document): Extract
 
     if(results.length === 0){
         const inputs = Array.from(root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
-            'input: not([type="hidden")]:not([type="submit"]):not([type="button"]), textarea, select'
+            'input:not([type="hidden"]):not([type="submit"]):not([type="button"]), textarea, select'
         ));
 
         for( const el of inputs) {
@@ -74,7 +74,7 @@ function extractTallyQuestionLabel(block: Element): string | null {
     const labelEl = block.querySelector(
         'label, [class*="Label"], [class*="label"], '+
         '[class*="Title"], [class*="title"], '+
-        'h2, h3, h4, span[class=*="haeding"], p[class*="heading"]'
+        'h2, h3, h4, span[class*="heading"], p[class*="heading"]'
     );
 
     if( labelEl && labelEl.textContent){
@@ -99,7 +99,7 @@ function findTallyInteractiveElement(
     seenElements: Set<Element>
 ): ExtractedField | null {
     const input = block.querySelector<HTMLInputElement>(
-        'input:not([type="hidden"]): not([type="submit"]): not([type="button"]): not([type="radio"]): not([type="checkbox"])'
+        'input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="radio"]):not([type="checkbox"])'
     );
     if( input && !seenElements.has(input)){
         seenElements.add(input);
@@ -150,7 +150,7 @@ function findTallyInteractiveElement(
     }
 
     const radioGroup = block.querySelector<HTMLElement>(
-        '[role="radiogroup"], [class*="RadioGroup"], [class*="radio-group]'
+        '[role="radiogroup"], [class*="RadioGroup"], [class*="radio-group"]'
     );
     if(radioGroup && !seenElements.has(radioGroup)){
         seenElements.add(radioGroup);
@@ -185,7 +185,7 @@ function extractLabelForTallyInput(el: HTMLInputElement | HTMLTextAreaElement | 
     const doc = el.ownerDocument || document;
 
     if(el.id){
-        const labelEl = doc.querySelector(`label[for="${el.id}]`);
+        const labelEl = doc.querySelector(`label[for="${el.id}"]`);
         if ( labelEl && labelEl.textContent){
             const text = cleanTallyLabel(labelEl.textContent);
             if(text) return text;
@@ -255,7 +255,7 @@ export function fillTallyField(el: HTMLElement, value: string): boolean {
         }
 
         el.dispatchEvent(new Event('input', { bubbles: true}));
-        el.dispatchEvent(new Event('charge', { bubbles: true}));
+        el.dispatchEvent(new Event('change', { bubbles: true}));
         el.dispatchEvent(new Event('blur', { bubbles: true}));
         return true;
     }
