@@ -11,30 +11,62 @@
 
 FillMyForm is a browser extension that keeps your details in profiles and fills long, tedious forms in one click. Set up a profile once, pick it from the extension popup, and the form fills itself. Everything is stored locally in your browser.
 
+**New: FillMyForm now works on Google Forms, Tally and Fillout, not just standard HTML forms.**
 
 ## Live Demo Video
 
 Demo: [Here](https://drive.google.com/file/d/1s8X8mNem5TYBNx56bBD2sSksYEtp4Z2g/view?usp=sharing)
 
+V2 Demo: [Here](https://drive.google.com/file/d/1wlo_Pd4ZcQPvgkOKoxZzyQfbON7zVGQQ/view?usp=sharing)
+
+
+## Screenshots
+ 
+<p align="center">
+  <img src="images/1.png" alt="FillMyForm screenshot 1" width="48%" />
+  <img src="images/2.png" alt="FillMyForm screenshot 2" width="48%" />
+</p>
+<p align="center">
+  <img src="images/3.png" alt="FillMyForm screenshot 3" width="48%" />
+  <img src="images/4.png" alt="FillMyForm screenshot 4" width="48%" />
+</p>
+
+## What's New
+ 
+- **Google Forms, Tally and Fillout support.** The biggest update so far. FillMyForm can now read the questions on these form builders and fill your answers, in addition to regular HTML forms.
+- **Default fields on every new profile.** You no longer have to build your profile from scratch. Creating a profile now generates a ready-made set of fields (identity, contact, address, education and professional details), so you only need to type in the values.
+- **Better confidence checking.** Matching between page labels and your profile fields is more reliable, and the highlight colors tell you how much to trust each filled field.
 
 ## Features
 - **One click filling** fills every field it recognizes on the page
-- **Multiple Profiles** so you can keep work and personal details separate
+- **Works on form builders** with support for Google Forms, Tally and Fillout
+- **Default profile fields** so a new profile starts with the details forms ask for most
+- **Multiple profiles** so you can keep work and personal details separate
 - **Local storage only** as your data never leaves your browser
 - **Custom fields** let you add anything the default fields do not cover
-- **Alternate values**  for fields liek a second email or phone number, with a small picker on the page to switch between them
-- **Match highlighting** shows a green outline for exact matches and a yellow outline for close matches worth a second look 
-- **Import and export** to back up a profile as a JSON file or mve it to another browser
-- **Never submits** as the extension onlu fills fields, and you review the form yourself
+- **Alternate values** for fields like a second email or phone number, with a small picker on the page to switch between them
+- **Match highlighting** shows a green outline for exact matches and a yellow outline for close matches worth a second look
+- **Import and export** to back up a profile as a JSON file or move it to another browser
+- **Never submits** as the extension only fills fields, and you review the form yourself
 
+
+## Supported Forms
+ 
+| Form type | Status |
+| --- | --- |
+| Standard HTML forms | Supported |
+| Google Forms | Supported |
+| Tally | Supported |
+| Fillout | Supported |
 
 ## Tech Stack
 
 - **Language:** TypeScript
 - **Bundler:** Vite
-- **Platform** Chrome extension (Manfiest v3), popup, options page and content script
-- **Storage:** `chrome.storgae.local`
+- **Platform:** Chrome extension (Manifest V3), popup, options page and content script
+- **Storage:** `chrome.storage.local`
 - **Frontend:** HTML and CSS
+- **Icons:** Font Awesome
 
 ## What is does 
 
@@ -82,39 +114,59 @@ Load it in Chrome:
 4. select the `dist` folder
 
 
+
 ## Project structure
  
 ```
-manifest.json             Extension manifest
-vite.config.ts            Vite build configuration
-src/
-    background/
-        background.ts     Background script
-    content/
-        content.ts        Runs on the page and fills the form
-    lib/
-        extractor.ts      Finds form fields and works out their labels
-        matcher.ts        Matches page labels to profile fields
-        filler.ts         Writes values, highlights fields and adds the value picker
-        schema.ts         Profile and field types
-        storage.ts        Reads and writes profiles in chrome.storage.local
-    options/
-        options.html      Profile manager page
-        options.ts        Profile editing, import and export
-    popup/
-        popup.html        Extension popup
-        popup.ts          Profile selection and the fill button
+manifest.json               Extension manifest
+vite.config.ts              Vite build for popup, options and background
+vite.content.config.ts      Vite build for the content script
+tsconfig.json               TypeScript configuration
+images/                     Screenshots used in this README
 public/
-    test-form.html        Sample form for testing
+    test-form.html          Sample form for testing
+    privacy.html            Privacy page linked from the options page
+src/
+    adapters/
+        googleForms.ts      Detects and fills Google Forms
+        tally.ts            Detects and fills Tally forms
+        fillout.ts          Detects and fills Fillout forms
+    background/
+        background.ts       Background script
+    content/
+        content.ts          Runs on the page and fills the form
+    lib/
+        extractor.ts        Finds form fields and works out their labels
+        matcher.ts          Matches page labels to profile fields
+        matcher.test.ts     Tests for the matcher
+        filler.ts           Writes values, highlights fields and adds the value picker
+        defaults.ts         Default fields created with every new profile
+        schema.ts           Profile and field types
+        storage.ts          Reads and writes profiles in chrome.storage.local
+    options/
+        options.html        Profile manager page
+        options.ts          Profile editing, import and export
+    popup/
+        popup.html          Extension popup
+        popup.ts            Profile selection and the fill button
 ```
 
 
 ## How matching works
 
-The contnet script collects every input, select and textarea on the page and works out a label for each one. It checks in order, the linked `<label>`, a wraping label, `aria-labelledby`, nearby text, the placeholder, and finally the field's `name` or `id`.
-
-Each label is then matches to a profile field. If the input has an `autocomplete` attribute, that is used first and counts as an exact match. Otherwise the label is cleaned up and compared against each profile field's name and synonmys. An identical match is exact and it will get outlined. if there is no identical match. the closest one is used when it is similar enough and it gets a yellow outline so you know to check it. when a field has more than one saved value, the first is filled and a small picker lets your switch.
-
+The content script first checks which kind of form it is on: Google Forms, Tally, Fillout, or a standard HTML form. Each adapter in `src/adapters/` knows how to find the questions and fill the answers for its builder. Standard forms use the extractor in `src/lib/extractor.ts`.
+ 
+For standard forms, the extractor collects every input, select and textarea on the page and works out a label for each one. It checks in order: the linked `<label>`, a wrapping label, `aria-labelledby`, nearby text, the placeholder, and finally the field's `name` or `id`.
+ 
+Each label is then matched to a profile field. If the input has an `autocomplete` attribute, that is used first and counts as an exact match. Otherwise the label is cleaned up and compared against each profile field's name and synonyms.
+ 
+The result is scored with a confidence check:
+ 
+- **Exact match:** the label is identical to a profile field or synonym. The field is filled and outlined in green.
+- **Close match:** there is no identical match, but the closest one is similar enough. The field is filled and outlined in yellow so you know to check it.
+- **No match:** the field is left empty.
+When a field has more than one saved value, the first is filled, the field is marked for review, and a small picker lets you switch.
+ 
 
 **All data is saved locally and nothing is being saved outside the user's browser**
 
