@@ -1,394 +1,377 @@
-import type { ExtractedField } from '../lib/extractor';
+import { ExtractedField } from '../lib/extractor';
+import { normalizeText, calculateSimilarity } from '../lib/matcher';
 
-const QUESTION_SELECTOR =
-    '[data-question-id], [class*="question"], [class*="Question"], ' +
-    '[class*="FormField"], [class*="form-field"], ' +
-    '[data-field-id], [class*="fillout-question"]';
 
-const TEXT_INPUT_SELECTOR =
-    'input:not([type="hidden"]):not([type="submit"]):not([type="button"])' +
-    ':not([type="radio"]):not([type="checkbox"]):not([type="file"])';
+export function isFillout(root: Document | Element = document): boolean {
+  if (typeof window !== 'undefined' && window.location) {
+    const hostname = window.location.hostname;
+    if (hostname === 'fillout.com' || hostname.endsWith('.fillout.com') || hostname === 'forms.fillout.com') {
+      return true;
+    }
+  }
 
-const COMBOBOX_SELECTOR =
-    '[role="combobox"], [role="listbox"], [class*="dropdown"], [class*="Dropdown"]';
-
-function normalize(text: string): string {
-    return text.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  
+  return !!(
+    root.querySelector('[data-fillout-id]') ||
+    root.querySelector('[data-form-id]') ||
+    root.querySelector('div.fillout-form') ||
+    root.querySelector('[class*="fillout"]') ||
+    root.querySelector('form[data-fillout]')
+  );
 }
 
-function makeField(element: HTMLElement, label: string, typeHint: string): ExtractedField {
-    return {
-        element,
+
+function cleanFilloutLabel(raw: string): string {
+  return raw
+    .replace(/\*+/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+
+export function extractFilloutFields(root: Document | Element = document): ExtractedField[] {
+  const results: ExtractedField[] = [];
+  const seenElements = new Set<Element>();
+
+  
+  const questionBlocks = Array.from(root.querySelectorAll(
+    '[data-question-id], [class*="question"], [class*="Question"], ' +
+    '[class*="FormField"], [class*="form-field"], ' +
+    '[data-field-id], [class*="fillout-question"]'
+  ));
+
+  for (const block of questionBlocks) {
+    const label = extractFilloutQuestionLabel(block);
+    if (!label) continue;
+
+    const field = findFilloutInteractiveElement(block, label, seenElements);
+    if (field) results.push(field);
+  }
+
+  if (results.length === 0) {
+    const inputs = Array.from(root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+      'input:not([type="hidden"]):not([type="submit"]):not([type="button"]), textarea, select'
+    ));
+
+    for (const el of inputs) {
+      if (seenElements.has(el)) continue;
+
+      const label = extractLabelForFilloutInput(el);
+      if (!label) continue;
+
+      seenElements.add(el);
+      const typeHint = el instanceof HTMLSelectElement ? 'select'
+        : el instanceof HTMLTextAreaElement ? 'text'
+        : el.getAttribute('type') || 'text';
+
+      results.push({
+        element: el,
         label,
         confidence: 1,
         typeHint,
-        adapter: 'fillout',
-    };
-}
-
-export function isFillout(root: Document | Element = document): boolean {
-    if (typeof window !== 'undefined' && window.location) {
-        const hostname = window.location.hostname;
-        if (
-            hostname === 'fillout.com' ||
-            hostname.endsWith('.fillout.com') ||
-            hostname === 'forms.fillout.com'
-        ) {
-            return true;
-        }
+        adapter: 'fillout'
+      });
     }
-    return !!(
-        root.querySelector('[data-fillout-id]') ||
-        root.querySelector('[data-form-id]') ||
-        root.querySelector('div.fillout-form') ||
-        root.querySelector('[class*="fillout"]') ||
-        root.querySelector('form[data-fillout]')
-    );
-}
+  }
 
-function cleanFilloutLabel(raw: string): string {
-    return raw.replace(/\*+/g, '').replace(/\s+/g, ' ').trim();
+  return results;
 }
 
 function extractFilloutQuestionLabel(block: Element): string | null {
-    const labelEl = block.querySelector(
-        'label, [class*="Label"], [class*="label"], ' +
-        '[class*="Title"], [class*="title"], ' +
-        '[class*="Heading"], [class*="heading"], ' +
-        'h2, h3, h4, p[class*="question"]'
-    );
-    if (labelEl && labelEl.textContent) {
-        const text = cleanFilloutLabel(labelEl.textContent);
-        if (text.length > 0 && text.length < 100) return text;
-    }
+  const labelEl = block.querySelector(
+    'label, [class*="Label"], [class*="label"], ' +
+    '[class*="Title"], [class*="title"], ' +
+    '[class*="Heading"], [class*="heading"], ' +
+    'h2, h3, h4, p[class*="question"]'
+  );
 
-    for (const child of Array.from(block.children)) {
-        if (child.querySelector('input, textarea, select')) continue;
-        const text = cleanFilloutLabel(child.textContent || '');
-        if (text.length > 1 && text.length < 100) return text;
-    }
+  if (labelEl && labelEl.textContent) {
+    const text = cleanFilloutLabel(labelEl.textContent);
+    if (text.length > 0 && text.length < 100) return text;
+  }
 
-    return null;
+  for (const child of Array.from(block.children)) {
+    if (child.querySelector('input, textarea, select')) continue;
+    const text = cleanFilloutLabel(child.textContent || '');
+    if (text.length > 1 && text.length < 100) return text;
+  }
+
+  return null;
 }
-
-function extractLabelForFilloutInput(el: HTMLElement): string | null {
-    const ariaLabel = el.getAttribute('aria-label');
-    if (ariaLabel && ariaLabel.trim()) return cleanFilloutLabel(ariaLabel);
-
-    const labelledBy = el.getAttribute('aria-labelledby');
-    if (labelledBy) {
-        const text = labelledBy
-            .split(/\s+/)
-            .map((id) => document.getElementById(id)?.textContent || '')
-            .join(' ');
-        if (text.trim()) return cleanFilloutLabel(text);
-    }
-
-    if (el.id) {
-        const linked = document.querySelector(`label[for="${CSS.escape(el.id)}"]`);
-        if (linked && linked.textContent && linked.textContent.trim()) {
-            return cleanFilloutLabel(linked.textContent);
-        }
-    }
-
-    const wrapping = el.closest('label');
-    if (wrapping && wrapping.textContent && wrapping.textContent.trim()) {
-        return cleanFilloutLabel(wrapping.textContent);
-    }
-
-    const placeholder = el.getAttribute('placeholder');
-    if (placeholder && placeholder.trim()) return cleanFilloutLabel(placeholder);
-
-    const name = el.getAttribute('name');
-    if (name && name.trim()) return cleanFilloutLabel(name);
-
-    return null;
-}
-
 function findFilloutInteractiveElement(
-    block: Element,
-    label: string,
-    seen: Set<Element>
+  block: Element,
+  label: string,
+  seenElements: Set<Element>
 ): ExtractedField | null {
-    const select = block.querySelector<HTMLSelectElement>('select');
-    if (select && !seen.has(select)) {
-        seen.add(select);
-        return makeField(select, label, 'select');
-    }
+  const input = block.querySelector<HTMLInputElement>(
+    'input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="radio"]):not([type="checkbox"])'
+  );
+  if (input && !seenElements.has(input)) {
+    seenElements.add(input);
+    return {
+      element: input,
+      label,
+      confidence: 1,
+      typeHint: input.getAttribute('type') || 'text',
+      adapter: 'fillout'
+    };
+  }
 
-    const textarea = block.querySelector<HTMLTextAreaElement>('textarea');
-    if (textarea && !seen.has(textarea)) {
-        seen.add(textarea);
-        return makeField(textarea, label, 'text');
-    }
+  const textarea = block.querySelector<HTMLTextAreaElement>('textarea');
+  if (textarea && !seenElements.has(textarea)) {
+    seenElements.add(textarea);
+    return {
+      element: textarea,
+      label,
+      confidence: 1,
+      typeHint: 'text',
+      adapter: 'fillout'
+    };
+  }
 
-    const radios = block.querySelectorAll<HTMLElement>('input[type="radio"], [role="radio"]');
-    if (radios.length > 0) {
-        const container =
-            (radios[0].closest('[role="radiogroup"]') as HTMLElement | null) ||
-            (block as HTMLElement);
-        if (!seen.has(container)) {
-            seen.add(container);
-            radios.forEach((r) => seen.add(r));
-            return makeField(container, label, 'radio');
-        }
-    }
+  const select = block.querySelector<HTMLSelectElement>('select');
+  if (select && !seenElements.has(select)) {
+    seenElements.add(select);
+    return {
+      element: select,
+      label,
+      confidence: 1,
+      typeHint: 'select',
+      adapter: 'fillout'
+    };
+  }
 
-    const checkboxes = block.querySelectorAll<HTMLElement>(
-        'input[type="checkbox"], [role="checkbox"]'
-    );
-    if (checkboxes.length > 0) {
-        const container =
-            (checkboxes[0].closest('[role="group"]') as HTMLElement | null) ||
-            (block as HTMLElement);
-        if (!seen.has(container)) {
-            seen.add(container);
-            checkboxes.forEach((c) => seen.add(c));
-            return makeField(container, label, 'checkbox');
-        }
-    }
+  const combobox = block.querySelector<HTMLElement>(
+    '[role="combobox"], [role="listbox"], [class*="dropdown"], [class*="Dropdown"], [class*="Select"]'
+  );
+  if (combobox && !seenElements.has(combobox)) {
+    seenElements.add(combobox);
+    return {
+      element: combobox,
+      label,
+      confidence: 1,
+      typeHint: 'select',
+      adapter: 'fillout'
+    };
+  }
 
-    const combobox = block.querySelector<HTMLElement>(COMBOBOX_SELECTOR);
-    if (combobox && !seen.has(combobox)) {
-        seen.add(combobox);
-        return makeField(combobox, label, 'select');
-    }
+  const radioGroup = block.querySelector<HTMLElement>(
+    '[role="radiogroup"], [class*="RadioGroup"], [class*="radio-group"]'
+  );
+  if (radioGroup && !seenElements.has(radioGroup)) {
+    seenElements.add(radioGroup);
+    return {
+      element: radioGroup,
+      label,
+      confidence: 1,
+      typeHint: 'radio',
+      adapter: 'fillout'
+    };
+  }
 
-    const input = block.querySelector<HTMLInputElement>(TEXT_INPUT_SELECTOR);
-    if (input && !seen.has(input)) {
-        seen.add(input);
-        return makeField(input, label, input.getAttribute('type') || 'text');
+  const radios = block.querySelectorAll<HTMLInputElement>('input[type="radio"]');
+  if (radios.length > 0) {
+    const container = radios[0].closest('[role="radiogroup"]') || block;
+    if (!seenElements.has(container)) {
+      seenElements.add(container);
+      return {
+        element: container as HTMLElement,
+        label,
+        confidence: 1,
+        typeHint: 'radio',
+        adapter: 'fillout'
+      };
     }
+  }
 
-    return null;
+
+  const checkboxGroup = block.querySelector<HTMLElement>('[role="group"]');
+  if (checkboxGroup && checkboxGroup.querySelector('[role="checkbox"], input[type="checkbox"]') && !seenElements.has(checkboxGroup)) {
+    seenElements.add(checkboxGroup);
+    return {
+      element: checkboxGroup,
+      label,
+      confidence: 1,
+      typeHint: 'checkbox',
+      adapter: 'fillout'
+    };
+  }
+
+  return null;
 }
 
-export function extractFilloutFields(root: Document | Element = document): ExtractedField[] {
-    const results: ExtractedField[] = [];
-    const seen = new Set<Element>();
 
-    const blocks = Array.from(root.querySelectorAll(QUESTION_SELECTOR));
+function extractLabelForFilloutInput(el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement): string | null {
+  const doc = el.ownerDocument || document;
 
-    for (const block of blocks) {
-        if (block.querySelector(QUESTION_SELECTOR)) continue;
 
-        const label = extractFilloutQuestionLabel(block);
-        if (!label) continue;
-
-        const field = findFilloutInteractiveElement(block, label, seen);
-        if (field) results.push(field);
+  if (el.id) {
+    const labelEl = doc.querySelector(`label[for="${el.id}"]`);
+    if (labelEl && labelEl.textContent) {
+      const text = cleanFilloutLabel(labelEl.textContent);
+      if (text) return text;
     }
+  }
 
-    const looseInputs = Array.from(
-        root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
-            `${TEXT_INPUT_SELECTOR}, textarea, select`
-        )
-    );
 
-    for (const el of looseInputs) {
-        if (seen.has(el)) continue;
-        const label = extractLabelForFilloutInput(el);
-        if (!label) continue;
+  const ariaLabel = el.getAttribute('aria-label');
+  if (ariaLabel) {
+    const text = cleanFilloutLabel(ariaLabel);
+    if (text) return text;
+  }
 
-        seen.add(el);
-        const typeHint =
-            el instanceof HTMLSelectElement
-                ? 'select'
-                : el instanceof HTMLTextAreaElement
-                ? 'text'
-                : el.getAttribute('type') || 'text';
+  const parentLabel = el.closest('label');
+  if (parentLabel && parentLabel.textContent) {
+    const text = cleanFilloutLabel(parentLabel.textContent);
+    if (text) return text;
+  }
 
-        results.push(makeField(el, label, typeHint));
-    }
 
-    return results;
+  const prev = el.previousElementSibling;
+  if (prev && prev.textContent) {
+    const text = cleanFilloutLabel(prev.textContent);
+    if (text.length > 0 && text.length < 80) return text;
+  }
+
+ 
+  const placeholder = el.getAttribute('placeholder');
+  if (placeholder) {
+    const text = cleanFilloutLabel(placeholder);
+    if (text) return text;
+  }
+
+  return null;
 }
+
 
 function triggerFilloutClick(target: HTMLElement): void {
-    const events = ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'];
-    for (const eventType of events) {
-        target.dispatchEvent(
-            new MouseEvent(eventType, {
-                bubbles: true,
-                cancelable: true,
-                view: target.ownerDocument.defaultView || window,
-            })
-        );
+  const events = ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'];
+  for (const eventType of events) {
+    target.dispatchEvent(
+      new MouseEvent(eventType, {
+        bubbles: true,
+        cancelable: true,
+        view: target.ownerDocument.defaultView || window
+      })
+    );
+  }
+}
+
+
+export function fillFilloutField(el: HTMLElement, value: string): boolean {
+  if (!value) return false;
+
+ 
+  if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+    const proto = el instanceof HTMLTextAreaElement
+      ? HTMLTextAreaElement.prototype
+      : HTMLInputElement.prototype;
+
+    const descriptor = Object.getOwnPropertyDescriptor(proto, 'value');
+    if (descriptor?.set) {
+      descriptor.set.call(el, value);
+    } else {
+      el.value = value;
     }
-}
 
-function setNativeValue(
-    element: HTMLInputElement | HTMLTextAreaElement,
-    value: string
-): boolean {
-    const proto =
-        element instanceof HTMLInputElement
-            ? HTMLInputElement.prototype
-            : HTMLTextAreaElement.prototype;
-    const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
-    if (!setter) return false;
-
-    element.focus();
-    setter.call(element, value);
-    element.dispatchEvent(new Event('input', { bubbles: true }));
-    element.dispatchEvent(new Event('change', { bubbles: true }));
-    element.blur();
-    return element.value.trim() !== '';
-}
-
-function labelMatches(optionLabel: string, value: string): boolean {
-    const a = normalize(optionLabel);
-    const b = normalize(value);
-    if (!a || !b) return false;
-    return a === b;
-}
-
-function labelLooselyMatches(optionLabel: string, value: string): boolean {
-    const a = normalize(optionLabel);
-    const b = normalize(value);
-    if (!a || !b) return false;
-    return a.includes(b) || b.includes(a);
-}
-
-function fillNativeSelect(element: HTMLSelectElement, value: string): boolean {
-    const options = Array.from(element.options);
-    const option =
-        options.find((o) => labelMatches(o.value, value) || labelMatches(o.text, value)) ||
-        options.find(
-            (o) =>
-                o.value !== '' &&
-                (labelLooselyMatches(o.value, value) || labelLooselyMatches(o.text, value))
-        );
-    if (!option) return false;
-
-    element.value = option.value;
-    element.dispatchEvent(new Event('input', { bubbles: true }));
-    element.dispatchEvent(new Event('change', { bubbles: true }));
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    el.dispatchEvent(new Event('blur', { bubbles: true }));
     return true;
-}
+  }
 
-function getChoiceLabel(el: HTMLElement): string {
-    const aria = el.getAttribute('aria-label');
-    if (aria && aria.trim()) return aria;
+ 
+  if (el instanceof HTMLSelectElement) {
+    const normalizedValue = value.trim().toLowerCase();
 
-    if (el instanceof HTMLInputElement) {
-        if (el.id) {
-            const linked = document.querySelector(`label[for="${CSS.escape(el.id)}"]`);
-            if (linked && linked.textContent) return linked.textContent;
+    for (const option of Array.from(el.options)) {
+      const optValue = option.value.trim().toLowerCase();
+      const optText = (option.textContent || '').trim().toLowerCase();
+      if (optValue === normalizedValue || optText === normalizedValue) {
+        const descriptor = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+        if (descriptor?.set) {
+          descriptor.set.call(el, option.value);
+        } else {
+          el.value = option.value;
         }
-        const wrapping = el.closest('label');
-        if (wrapping && wrapping.textContent) return wrapping.textContent;
-        const parentText = el.parentElement?.textContent;
-        if (parentText) return parentText;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+      }
     }
-
-    return el.textContent || '';
-}
-
-function isChoiceChecked(el: HTMLElement): boolean {
-    if (el instanceof HTMLInputElement) return el.checked;
-    return el.getAttribute('aria-checked') === 'true';
-}
-
-function clickChoice(el: HTMLElement): void {
-    if (el instanceof HTMLInputElement) {
-        el.click();
-    } else {
-        triggerFilloutClick(el);
-    }
-}
-
-function fillRadioGroup(container: HTMLElement, value: string): boolean {
-    const choices = Array.from(
-        container.querySelectorAll<HTMLElement>('input[type="radio"], [role="radio"]')
-    );
-    if (choices.length === 0) return false;
-
-    const target =
-        choices.find((c) => labelMatches(getChoiceLabel(c), value)) ||
-        choices.find((c) => labelLooselyMatches(getChoiceLabel(c), value));
-    if (!target) return false;
-
-    if (!isChoiceChecked(target)) clickChoice(target);
-    return true;
-}
-
-function fillCheckboxGroup(container: HTMLElement, value: string): boolean {
-    const choices = Array.from(
-        container.querySelectorAll<HTMLElement>('input[type="checkbox"], [role="checkbox"]')
-    );
-    if (choices.length === 0) return false;
-
-    const wanted = value.split(/[,;]/).map((v) => v.trim()).filter(Boolean);
-    let matchedAny = false;
-
-    for (const want of wanted) {
-        const target =
-            choices.find((c) => labelMatches(getChoiceLabel(c), want)) ||
-            choices.find((c) => labelLooselyMatches(getChoiceLabel(c), want));
-        if (!target) continue;
-
-        matchedAny = true;
-        if (!isChoiceChecked(target)) clickChoice(target);
-    }
-
-    return matchedAny;
-}
-
-function selectListboxOption(value: string): boolean {
-    const options = Array.from(
-        document.querySelectorAll<HTMLElement>('[role="option"], [role="listbox"] li')
-    );
-    const target =
-        options.find((o) => labelMatches(o.textContent || '', value)) ||
-        options.find((o) => labelLooselyMatches(o.textContent || '', value));
-    if (!target) return false;
-
-    triggerFilloutClick(target);
-    return true;
-}
-
-function fillCombobox(element: HTMLElement, value: string): boolean {
-    if (element instanceof HTMLInputElement) {
-        setNativeValue(element, value);
-    } else {
-        triggerFilloutClick(element);
-    }
-
-    if (selectListboxOption(value)) return true;
-
-    setTimeout(() => {
-        selectListboxOption(value);
-    }, 250);
-
     return false;
-}
+  }
 
-export function fillFilloutField(element: HTMLElement, value: string): boolean {
-    const trimmed = value.trim();
-    if (!trimmed) return false;
+  const options = Array.from(el.querySelectorAll<HTMLElement>(
+    'input[type="radio"], [role="radio"], [role="option"], label, [class*="option"], [class*="Option"]'
+  ));
 
-    if (element instanceof HTMLSelectElement) {
-        return fillNativeSelect(element, trimmed);
+  if (options.length > 0) {
+    const normalizedValue = normalizeText(value);
+    let bestOption: HTMLElement | null = null;
+    let bestScore = 0;
+
+    for (const opt of options) {
+      const text =
+        (opt instanceof HTMLInputElement && opt.value ? opt.value : '') ||
+        opt.getAttribute('value') ||
+        opt.textContent ||
+        '';
+      const normText = normalizeText(text);
+
+      if (normText === normalizedValue) {
+        bestOption = opt;
+        bestScore = 1.0;
+        break;
+      }
+
+      const score = calculateSimilarity(normalizedValue, normText);
+      if (score > bestScore && score >= 0.75) {
+        bestScore = score;
+        bestOption = opt;
+      }
     }
 
-    if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
-        if (element.getAttribute('role') === 'combobox') {
-            return fillCombobox(element, trimmed);
+    if (bestOption) {
+      if (bestOption instanceof HTMLInputElement && bestOption.type === 'radio') {
+        const checkedDescriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'checked');
+        if (checkedDescriptor?.set) {
+          checkedDescriptor.set.call(bestOption, true);
+        } else {
+          bestOption.checked = true;
         }
-        return setNativeValue(element, trimmed);
+        bestOption.dispatchEvent(new Event('input', { bubbles: true }));
+        bestOption.dispatchEvent(new Event('change', { bubbles: true }));
+      } else {
+        triggerFilloutClick(bestOption);
+      }
+      return true;
     }
+  }
 
-    if (
-        element.getAttribute('role') === 'radiogroup' ||
-        element.querySelector('input[type="radio"], [role="radio"]')
-    ) {
-        return fillRadioGroup(element, trimmed);
-    }
+  const comboboxTrigger = el.querySelector<HTMLElement>(
+    '[role="combobox"], [class*="trigger"], [class*="Trigger"], button'
+  );
+  if (comboboxTrigger) {
+    triggerFilloutClick(comboboxTrigger);
 
-    if (element.querySelector('input[type="checkbox"], [role="checkbox"]')) {
-        return fillCheckboxGroup(element, trimmed);
-    }
+    const doc = el.ownerDocument || document;
+    setTimeout(() => {
+      const listboxOptions = Array.from(doc.querySelectorAll<HTMLElement>(
+        '[role="option"], [role="listbox"] [class*="option"], [role="listbox"] [class*="Option"]'
+      ));
 
-    return fillCombobox(element, trimmed);
+      const normalizedValue = normalizeText(value);
+      for (const opt of listboxOptions) {
+        const normText = normalizeText(opt.textContent || '');
+        if (normText === normalizedValue || calculateSimilarity(normalizedValue, normText) >= 0.8) {
+          triggerFilloutClick(opt);
+          break;
+        }
+      }
+    }, 100);
+    return true;
+  }
+
+  return false;
 }
