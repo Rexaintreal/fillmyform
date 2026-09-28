@@ -4,25 +4,42 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fill My Form - Test Playground</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <style>
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
       :root {
-        --primary: #4f46e5;
-        --primary-hover: #4338ca;
-        --bg: #f8fafc;
-        --card-bg: #ffffff;
-        --text: #0f172a;
-        --text-muted: #64748b;
-        --border: #e2e8f0;
-        --radius: 8px;
+        color-scheme: dark;
+        --bg: #09090b;
+        --surface: #09090b;
+        --surface-2: #121215;
+        --surface-3: #18181b;
+        --border: #27272a;
+        --border-2: #3f3f46;
+        --text-1: #fafafa;
+        --text-2: #a1a1a1;
+        --text-3: #71717a;
+        --success: #22c55e;
+        --r: 8px;
+        --r-sm: 6px;
+        --ease: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      html {
+        font-size: 14px;
       }
 
       body {
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
-          Helvetica, sans-serif;
-        background-color: var(--bg);
-        color: var(--text);
-        line-height: 1.5;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text-1);
+        line-height: 1.55;
+        letter-spacing: -0.01em;
         margin: 0;
         padding: 40px 20px;
       }
@@ -30,12 +47,9 @@
       .container {
         max-width: 640px;
         margin: 0 auto;
-        background: var(--card-bg);
+        background: var(--surface-2);
         padding: 32px;
-        border-radius: var(--radius);
-        box-shadow:
-          0 4px 6px -1px rgb(0 0 0 / 0.1),
-          0 2px 4px -2px rgb(0 0 0/ 0.1);
+        border-radius: var(--r);
         border: 1px solid var(--border);
       }
 
@@ -46,41 +60,62 @@
       }
 
       .badge {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         padding: 3px 10px;
-        background: #e0e7ff;
-        color: #3730a3;
+        background: var(--surface-3);
+        border: 1px solid var(--border-2);
+        color: var(--text-2);
         border-radius: 9999px;
-        font-size: 0.8em;
-        font-weight: 600;
-        margin-bottom: 8px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-bottom: 10px;
       }
 
       h1 {
-        font-size: 1.6rem;
-        margin: 0 0 8px 0;
-        color: var(--text);
+        font-size: 1.4rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        margin: 0 0 6px 0;
+        color: var(--text-1);
       }
 
       p.subtitle {
-        color: var(--text-muted);
+        color: var(--text-2);
         margin: 0;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
       }
 
       .instructions-box {
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
-        border-radius: var(--radius);
+        background: var(--surface-3);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
         padding: 14px 16px;
         margin-bottom: 24px;
-        font-size: 0.9rem;
-        color: #166534;
+        font-size: 0.85rem;
+        color: var(--text-2);
+      }
+
+      .instructions-box strong {
+        color: var(--text-1);
+        font-weight: 600;
+      }
+
+      .instructions-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
       }
 
       .instructions-box ol {
         margin: 6px 0 0 18px;
         padding: 0;
+      }
+
+      .instructions-box li {
+        margin-bottom: 2px;
       }
 
       .form-group {
@@ -97,7 +132,8 @@
         display: block;
         font-weight: 500;
         margin-bottom: 6px;
-        font-size: 0.9rem;
+        font-size: 0.8rem;
+        color: var(--text-1);
       }
 
       input[type="text"],
@@ -106,24 +142,38 @@
       select,
       textarea {
         width: 100%;
-        box-sizing: border-box;
-        padding: 10px 12px;
+        padding: 9px 12px;
         border: 1px solid var(--border);
-        border-radius: 6px;
-        font-size: 0.95rem;
-        color: var(--text);
-        background-color: #fff;
-        transition:
-          border-color 0.2s,
-          box-shadow 0.2;
+        border-radius: var(--r-sm);
+        font-family: inherit;
+        font-size: 0.9rem;
+        color: var(--text-1);
+        background-color: var(--surface-3);
+        transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease), background-color 0.15s var(--ease);
+      }
+
+      input::placeholder,
+      textarea::placeholder {
+        color: var(--text-3);
+      }
+
+      input:hover,
+      select:hover,
+      textarea:hover {
+        border-color: var(--border-2);
       }
 
       input:focus,
       select:focus,
       textarea:focus {
         outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        border-color: #71717a;
+        background-color: var(--bg);
+        box-shadow: 0 0 0 1px #71717a;
+      }
+
+      textarea {
+        resize: vertical;
       }
 
       .radio-group {
@@ -137,7 +187,13 @@
         align-items: center;
         gap: 6px;
         cursor: pointer;
-        font-weight: normal;
+        font-weight: 400;
+        color: var(--text-2);
+      }
+
+      .radio-label input[type="radio"] {
+        accent-color: #fafafa;
+        margin: 0;
       }
 
       .btn-row {
@@ -149,83 +205,108 @@
       }
 
       button {
-        padding: 10px 20px;
-        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        font-family: inherit;
+        font-size: 0.85rem;
         font-weight: 500;
-        border-radius: 6px;
+        border-radius: var(--r-sm);
         cursor: pointer;
-        border: none;
-        transition: background-color 0.2s;
+        border: 1px solid transparent;
+        transition: background-color 0.15s var(--ease), border-color 0.15s var(--ease);
+      }
+
+      button i {
+        font-size: 0.85em;
       }
 
       .btn-submit {
-        background-color: var(--primary);
-        color: white;
+        background-color: #fafafa;
+        color: #09090b;
+        font-weight: 600;
       }
 
       .btn-submit:hover {
-        background-color: var(--primary-hover);
+        background-color: #e4e4e7;
       }
 
       .btn-reset {
-        background-color: #f1f5f9;
-        color: var(--text-muted);
+        background-color: transparent;
+        color: var(--text-2);
         border: 1px solid var(--border);
       }
 
       .btn-reset:hover {
-        background-color: #e2e8f0;
-        color: var(--text);
+        background-color: var(--surface-3);
+        color: var(--text-1);
+      }
+
+      :focus-visible {
+        outline: 1px solid #71717a;
+        outline-offset: 1px;
       }
 
       #successMsg {
         display: none;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
         margin-top: 16px;
         padding: 12px;
-        background: #ecfdf5;
-        border: 1px solid #a7f3d0;
-        color: #065f46;
-        border-radius: 6px;
-        text-align: center;
+        background: rgba(34, 197, 94, 0.08);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        color: var(--success);
+        border-radius: var(--r-sm);
+        font-size: 0.85rem;
         font-weight: 500;
+      }
+
+      #successMsg.visible {
+        display: flex;
+      }
+
+      @media (max-width: 560px) {
+        .form-row {
+          grid-template-columns: 1fr;
+          gap: 0;
+        }
+
+        .container {
+          padding: 20px;
+        }
       }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
+        <div class="badge"><i class="fa-solid fa-flask"></i>Test Playground</div>
         <h1>Sample Basic Details Form</h1>
-        <p class="subtitle">
-          Use this to test FIll My Form on a real web form.
-        </p>
+        <p class="subtitle">Use this to test Fill My Form on a real web form.</p>
       </div>
 
       <div class="instructions-box">
-        <strong>How to test:</strong>
+        <div class="instructions-title">
+          <i class="fa-solid fa-circle-info"></i>
+          <strong>How to test</strong>
+        </div>
         <ol>
-          <li>
-            Click the <strong>Fill My Form</strong> extension icon in your
-            browser toolbar.
-          </li>
-          <li>Select your profile and click <strong>"Fill My Form</strong>.</li>
-          <li>Watch all matching fields instantly populate and highlight!</li>
+          <li>Click the <strong>Fill My Form</strong> extension icon in your browser toolbar.</li>
+          <li>Select your profile and click <strong>Fill My Form</strong>.</li>
+          <li>Watch all matching fields instantly populate and highlight.</li>
         </ol>
       </div>
 
-      <form
-        id="testForm"
-        onsubmit="
-          event.preventDefault();
-          document.getElementById('successMsg').style.display = 'block';
-        "
-      >
+      <form id="testForm">
         <div class="form-group">
           <label for="fullName">Full Name</label>
           <input
             type="text"
             id="fullName"
             name="name"
-            placeholder="e.g. Sujal Tiwari"
+            placeholder="e.g. Jane Doe"
             autocomplete="name"
           />
         </div>
@@ -242,75 +323,121 @@
             />
           </div>
           <div class="form-group">
-            <label for="address">Street Address</label>
+            <label for="phone">Phone Number</label>
             <input
-              type="text"
-              id="address"
-              name="address"
-              placeholder="e.g. 123 Innovation Way"
-              autocomplete="street-address"
+              type="tel"
+              id="phone"
+              name="phone"
+              placeholder="e.g. +1 555-0100"
+              autocomplete="tel"
             />
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="city">City</label>
-              <input
-                type="text"
-                id="city"
-                name="city"
-                placeholder="e.g. Dholakpur"
-                autocomplete="address-level2"
-              />
-            </div>
-            <div class="form-group">
-              <label for="country">Country</label>
-              <select name="country" id="country" autocomplete="country-name">
-                <option value="">Select country...</option>
-                <option value="United States">United States</option>
-                <option value="India">India</option>
-                <option value="United Kingdom">United Kingdom</option>
-                <option value="Canada">Canada</option>
-                <option value="Australia">Australia</option>
-                <option value="Germany">Germany</option>
-              </select>
-            </div>
+        </div>
+
+        <div class="form-group">
+          <label for="address">Street Address</label>
+          <input
+            type="text"
+            id="address"
+            name="address"
+            placeholder="e.g. 123 Innovation Way"
+            autocomplete="street-address"
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="city">City</label>
+            <input
+              type="text"
+              id="city"
+              name="city"
+              placeholder="e.g. Dholakpur"
+              autocomplete="address-level2"
+            />
           </div>
           <div class="form-group">
-            <label>Preferred Contact Method</label>
-            <div class="radio-group">
-              <label class="radio-label">
-                <input type="radio" name="contact_method" value="Email" /> Email
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="contact_method" value="Phone" /> Phone
-              </label>
-            </div>
+            <label for="state">State</label>
+            <input
+              type="text"
+              id="state"
+              name="state"
+              placeholder="e.g. Haryana"
+              autocomplete="address-level1"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="zip">Postal Code</label>
+            <input
+              type="text"
+              id="zip"
+              name="zip"
+              placeholder="e.g. 122001"
+              autocomplete="postal-code"
+            />
           </div>
           <div class="form-group">
-            <label for="notes">Bio / Comments</label>
-            <textarea
-              name="notes"
-              id="notes"
-              rows="3"
-              placeholder="Tell us a little about yourself..."
-            ></textarea>
+            <label for="country">Country</label>
+            <select name="country" id="country" autocomplete="country-name">
+              <option value="">Select country...</option>
+              <option value="United States">United States</option>
+              <option value="India">India</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="Canada">Canada</option>
+              <option value="Australia">Australia</option>
+              <option value="Germany">Germany</option>
+            </select>
           </div>
-          <div class="btn-row">
-            <button type="submit" class="btn-submit">Submit Form</button>
-            <button
-              type="reset"
-              class="btn-reset"
-              onclick="
-                document.getElementById('successMsg').style.display = 'none'
-              "
-            >
-              Clear Fields
-            </button>
+        </div>
+
+        <div class="form-group">
+          <label>Preferred Contact Method</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="contact_method" value="Email" /> Email
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="contact_method" value="Phone" /> Phone
+            </label>
           </div>
-          <div id="successMsg">Form submitted Successfully!</div>
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Bio / Comments</label>
+          <textarea
+            name="notes"
+            id="notes"
+            rows="3"
+            placeholder="Tell us a little about yourself..."
+          ></textarea>
+        </div>
+
+        <div class="btn-row">
+          <button type="submit" class="btn-submit"><i class="fa-solid fa-paper-plane"></i>Submit Form</button>
+          <button type="reset" class="btn-reset" id="resetBtn"><i class="fa-solid fa-rotate-left"></i>Clear Fields</button>
+        </div>
+
+        <div id="successMsg" role="status" aria-live="polite">
+          <i class="fa-solid fa-circle-check"></i>Form submitted successfully!
         </div>
       </form>
     </div>
+    <script>
+      const form = document.getElementById('testForm');
+      const successMsg = document.getElementById('successMsg');
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        successMsg.classList.add('visible');
+      });
+
+      form.addEventListener('reset', () => {
+        successMsg.classList.remove('visible');
+      });
+    </script>
     <script type="module" src="./content.js"></script>
   </body>
 </html>
